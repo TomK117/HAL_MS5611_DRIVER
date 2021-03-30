@@ -130,7 +130,7 @@ int32_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_
 }
 
 /*
- * 修正气压和温度
+ * calcule actual temperature and pressure
  */
 int32_t MS5611_calculate(MS5611_t* datastruct)
 {
