@@ -8,7 +8,11 @@ autor arthur_chevrier_chahidi
 I2C_HandleTypeDef hi2c1;
 
 /*
- driver ms5611
+ * driver ms5611 build for I2C communication
+ */
+
+/*
+ * Function for reseting the sensor
  */
 void MS5611_Rest(I2C_HandleTypeDef* I2Cx)
 {
@@ -16,7 +20,9 @@ void MS5611_Rest(I2C_HandleTypeDef* I2Cx)
 	HAL_I2C_Master_Transmit(I2Cx, MS5611_SLAVE_ADDR, &RESET, 1, 1000);
 	HAL_Delay(4);
 }
-
+/*
+ * Function for reading PROM memories of the sensor
+ */
 int16_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
 
 	uint8_t i;
@@ -63,7 +69,9 @@ int16_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct)
 	return MS5611_OK;
 }
 
-
+/*
+ * Function for reading raw temperature of the sensor
+ */
 int32_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
 {
 	I2C_HandleTypeDef* Handle = I2Cx;
@@ -96,7 +104,9 @@ int32_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t 
 	return MS5611_OK;
 }
 
-
+/*
+ * Function for reading raw pressure of the sensor
+ */
 int32_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
 {
 	I2C_HandleTypeDef* Handle = I2Cx;
@@ -130,7 +140,7 @@ int32_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_
 }
 
 /*
- * calcule actual temperature and pressure
+ * Function for pressure and temperature calculation
  */
 int32_t MS5611_calculate(MS5611_t* datastruct)
 {
