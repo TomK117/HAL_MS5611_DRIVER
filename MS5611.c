@@ -23,7 +23,7 @@ void MS5611_Rest(I2C_HandleTypeDef* I2Cx)
 /*
  * Function for reading PROM memories of the sensor
  */
-int16_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
+int8_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
 
 	uint8_t i;
 	uint8_t data[2];
@@ -62,7 +62,7 @@ int16_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
 
 	return MS5611_OK;
 }
-int16_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct)
+int8_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct)
 {
 	MS5611_Rest(I2Cx);
 	MS5611_PROM_read(I2Cx,datastruct);
@@ -72,7 +72,7 @@ int16_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct)
 /*
  * Function for reading raw temperature of the sensor
  */
-int32_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
+int8_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
 {
 	I2C_HandleTypeDef* Handle = I2Cx;
 	uint8_t address = datastruct->adress;
@@ -107,7 +107,7 @@ int32_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t 
 /*
  * Function for reading raw pressure of the sensor
  */
-int32_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
+int8_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
 {
 	I2C_HandleTypeDef* Handle = I2Cx;
 	uint8_t address = datastruct->adress;
@@ -142,7 +142,7 @@ int32_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_
 /*
  * Function for pressure and temperature calculation
  */
-int32_t MS5611_calculate(MS5611_t* datastruct)
+int8_t MS5611_calculate(MS5611_t* datastruct)
 {
 	int64_t dT = 0,TEMP = 0,T2 = 0,OFF = 0,OFF2 = 0,SENS2 = 0,SENS = 0,PRES = 0;
 

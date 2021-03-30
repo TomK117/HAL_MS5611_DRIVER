@@ -37,8 +37,8 @@ typedef struct
 {
 	uint8_t adress;
 	uint16_t C[6];	//PROM
-	uint16_t *reserve;
-	uint16_t *crc;
+	uint16_t reserve;
+	uint16_t crc;
 	uint32_t D[2];	//D1 temperature data & D2 pressure data
 	int32_t dT;	//Difference between actual and reference temperature
 	int64_t OFF;	//Offset at actual temperature
@@ -48,10 +48,10 @@ typedef struct
 }MS5611_t;
 
 void MS5611_Rest(I2C_HandleTypeDef* I2Cx);
-int16_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
-int16_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
-int32_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
-int32_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
-int32_t MS5611_calculate(MS5611_t* datastruct);
+int8_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
+int8_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
+int8_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
+int8_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
+int8_t MS5611_calculate(MS5611_t* datastruct);
 
 #endif
