@@ -37,7 +37,7 @@ int16_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
 
 	while(HAL_I2C_Master_Receive(Handle, address, data, 2, 100) != HAL_OK);
 
-	datastruct->reserve = (uint16_t *)(data[0] << 8 | data[1]);
+	datastruct->reserve = (uint16_t)(data[0] << 8 | data[1]);
 
 	for (i=1;i<=6;i++){
 
@@ -52,7 +52,7 @@ int16_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
 
 	while(HAL_I2C_Master_Receive(Handle, address, data, 2, 100) != HAL_OK);
 
-	datastruct->crc = (uint16_t *)(data[0] << 8 | data[1]);
+	datastruct->crc = (uint16_t)(data[0] << 8 | data[1]);
 
 	return MS5611_OK;
 }
@@ -136,22 +136,31 @@ int32_t MS5611_calculate(MS5611_t* datastruct)
 {
 	int64_t dT = 0,TEMP = 0,T2 = 0,OFF = 0,OFF2 = 0,SENS2 = 0,SENS = 0,PRES = 0;
 
-	//20°C
-	/*if(TEMP < 2000 && TEMP > -1500)
-	{
-		T2 = ( dT*dT )>>31;
-		OFF2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 2;
-		SENS2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 4;
-
-	}*/
 	dT = datastruct->D[1] - ((int32_t) (datastruct->C[4])<<8);
 	TEMP = 2000 + ((int32_t) (dT*(datastruct->C[5]))>>23);
 	OFF = (((int64_t)(datastruct->C[1])) << 16) + (((datastruct->C[3]) * dT) >> 7);
 	SENS = (((int64_t)(datastruct->C[0])) << 15) + (((datastruct->C[2]) * dT) >> 8);
+
+	if(TEMP < 2000) { //temperature < 20°C
+		T2 = ( dT*dT )>>31;
+		OFF2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 2;
+		SENS2 = 5 * (TEMP - 2000) * (TEMP - 2000) / 4;
+
+		if (TEMP < -1500) { //temperature < -15°C
+			OFF2 = OFF2 + (7 * (TEMP + 1500) * (TEMP + 1500));
+			SENS2 = SENS2 + (11 * (TEMP + 1500) * (TEMP + 1500) / 2);
+		}
+	}
+	else { //temperature > 20°C
+		T2 = 0;
+		OFF2 = 0;
+		SENS2 = 0;
+	}
+
 	datastruct->dT = dT;
-	datastruct->OFF = OFF;
-	datastruct->TEMP = TEMP;
-	datastruct->SENS = SENS;
+	datastruct->OFF = OFF - OFF2;
+	datastruct->TEMP = TEMP - T2;
+	datastruct->SENS = SENS - SENS2;
 
 	PRES = ((((int32_t)(datastruct->D[0]) * (datastruct->SENS))>>21) - (datastruct->OFF))>>15;
 	datastruct->P = PRES;
