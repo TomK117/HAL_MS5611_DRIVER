@@ -23,7 +23,7 @@ void MS5611_Rest(I2C_HandleTypeDef* I2Cx)
 /*
  * Function for reading PROM memories of the sensor
  */
-int8_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
+uint8_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
 
 	uint8_t i;
 	uint8_t data[2];
@@ -62,7 +62,7 @@ int8_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
 
 	return MS5611_OK;
 }
-int8_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct)
+uint8_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct)
 {
 	MS5611_Rest(I2Cx);
 	MS5611_PROM_read(I2Cx,datastruct);
@@ -72,7 +72,7 @@ int8_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct)
 /*
  * Function for reading raw temperature of the sensor
  */
-int8_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
+uint8_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
 {
 	I2C_HandleTypeDef* Handle = I2Cx;
 	uint8_t address = datastruct->adress;
@@ -107,7 +107,7 @@ int8_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t r
 /*
  * Function for reading raw pressure of the sensor
  */
-int8_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
+uint8_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution)
 {
 	I2C_HandleTypeDef* Handle = I2Cx;
 	uint8_t address = datastruct->adress;
@@ -142,7 +142,7 @@ int8_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t
 /*
  * Function for pressure and temperature calculation
  */
-int8_t MS5611_calculate(MS5611_t* datastruct)
+uint8_t MS5611_calculate(MS5611_t* datastruct)
 {
 	int64_t dT = 0,TEMP = 0,T2 = 0,OFF = 0,OFF2 = 0,SENS2 = 0,SENS = 0,PRES = 0;
 
@@ -178,6 +178,125 @@ int8_t MS5611_calculate(MS5611_t* datastruct)
 }
 
 
+uint8_t NB_MS5611_request_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution){
+
+	I2C_HandleTypeDef* Handle = I2Cx;
+	uint8_t address = datastruct->adress;
+	uint8_t cmd;
+	uint8_t timeout = 0;
+
+	switch(resolution){
+	case MS5611_CMD_CONVERT_D2_256 : cmd = MS5611_CMD_CONVERT_D2_256;
+	break;
+	case MS5611_CMD_CONVERT_D2_512 : cmd = MS5611_CMD_CONVERT_D2_512;
+	break;
+	case MS5611_CMD_CONVERT_D2_1024 : cmd = MS5611_CMD_CONVERT_D2_1024;
+	break;
+	case MS5611_CMD_CONVERT_D2_2048 : cmd = MS5611_CMD_CONVERT_D2_2048;
+	break;
+	case MS5611_CMD_CONVERT_D2_4096 : cmd = MS5611_CMD_CONVERT_D2_4096;
+	break;
+	default : cmd = MS5611_CMD_CONVERT_D2_4096;
+	}
+
+	while(HAL_I2C_Master_Transmit(Handle, address, &cmd, 1, 100) != HAL_OK){ //asking adc to store data
+		HAL_Delay(1);
+		timeout++;
+		if(timeout >= 10){
+			return MS5611_ERROR; //time out max 10ms
+			break;
+		}
+	}
+	return MS5611_OK;
+}
+
+uint8_t NB_MS5611_pull_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
+
+	I2C_HandleTypeDef* Handle = I2Cx;
+	uint8_t address = datastruct->adress;
+	uint8_t reg = MS6511_ADC_READ;
+	uint8_t data[3];
+	uint8_t timeout = 0;
+
+	while(HAL_I2C_Master_Transmit(Handle, address, &reg, 1, 100) != HAL_OK){//asking for the data
+		HAL_Delay(1);
+		timeout++;
+		if(timeout >= 10){
+			return MS5611_ERROR; //time out max 10ms
+			break;
+		}
+	}
+	while(HAL_I2C_Master_Receive(Handle, address, data, 3, 100) != HAL_OK){//receive the data
+		HAL_Delay(1);
+		timeout++;
+		if(timeout >= 10){
+			return MS5611_ERROR; //time out max 10ms
+			break;
+		}
+	}
+	datastruct->D[1] = (data[0] << 16 | data[1] << 8 | data[2]);
+	return MS5611_OK;
+}
+
+uint8_t NB_MS5611_request_press(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution){
+
+	I2C_HandleTypeDef* Handle = I2Cx;
+	uint8_t address = datastruct->adress;
+	uint8_t cmd;
+	uint8_t timeout = 0;
+
+	switch(resolution){
+	case MS5611_CMD_CONVERT_D2_256 : cmd = MS5611_CMD_CONVERT_D1_256;
+	break;
+	case MS5611_CMD_CONVERT_D2_512 : cmd = MS5611_CMD_CONVERT_D1_512;
+	break;
+	case MS5611_CMD_CONVERT_D2_1024 : cmd = MS5611_CMD_CONVERT_D1_1024;
+	break;
+	case MS5611_CMD_CONVERT_D2_2048 : cmd = MS5611_CMD_CONVERT_D1_2048;
+	break;
+	case MS5611_CMD_CONVERT_D2_4096 : cmd = MS5611_CMD_CONVERT_D1_4096;
+	break;
+	default : cmd = MS5611_CMD_CONVERT_D1_4096;
+	}
+
+	while(HAL_I2C_Master_Transmit(Handle, address, &cmd, 1, 100) != HAL_OK){ //asking adc to store data
+		HAL_Delay(1);
+		timeout++;
+		if(timeout >= 10){
+			return MS5611_ERROR; //time out max 10ms
+			break;
+		}
+	}
+	return MS5611_OK;
+}
+
+uint8_t NB_MS5611_pull_press(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
+
+	I2C_HandleTypeDef* Handle = I2Cx;
+	uint8_t address = datastruct->adress;
+	uint8_t reg = MS6511_ADC_READ;
+	uint8_t data[3];
+	uint8_t timeout = 0;
+
+	while(HAL_I2C_Master_Transmit(Handle, address, &reg, 1, 100) != HAL_OK){//asking for the data
+		HAL_Delay(1);
+		timeout++;
+		if(timeout >= 10){
+			return MS5611_ERROR; //time out max 10ms
+			break;
+		}
+	}
+	while(HAL_I2C_Master_Receive(Handle, address, data, 3, 100) != HAL_OK){//receive the data
+		HAL_Delay(1);
+		timeout++;
+		if(timeout >= 10){
+			return MS5611_ERROR; //time out max 10ms
+			break;
+		}
+	}
+	datastruct->D[0] = (data[0] << 16 | data[1] << 8 | data[2]);
+	return MS5611_OK;
+}
 
 
 
