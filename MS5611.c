@@ -65,7 +65,7 @@ uint8_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct){
 uint8_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct)
 {
 	MS5611_Rest(I2Cx);
-	datastruct->adress = MS5611_SLAVE_ADDR;
+	datastruct->adress = MS5611_SLAVE_ADDR; //add slave adress to the datastruct
 	MS5611_PROM_read(I2Cx,datastruct);
 	return MS5611_OK;
 }
