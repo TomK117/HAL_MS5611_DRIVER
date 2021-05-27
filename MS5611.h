@@ -48,10 +48,14 @@ typedef struct
 }MS5611_t;
 
 void MS5611_Rest(I2C_HandleTypeDef* I2Cx);
-int8_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
-int8_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
-int8_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
-int8_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
-int8_t MS5611_calculate(MS5611_t* datastruct);
+uint8_t MS5611_init(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
+uint8_t MS5611_PROM_read(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
+uint8_t MS5611_read_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
+uint8_t NB_MS5611_request_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
+uint8_t NB_MS5611_pull_temp(I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
+uint8_t MS5611_read_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
+uint8_t NB_MS5611_request_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct, uint8_t resolution);
+uint8_t NB_MS5611_pull_press (I2C_HandleTypeDef* I2Cx, MS5611_t* datastruct);
+uint8_t MS5611_calculate(MS5611_t* datastruct);
 
 #endif
